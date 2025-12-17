@@ -132,24 +132,81 @@ dataset:
 
 ### Security Configuration
 
-#### Remote Admin Access
+⚠️ **WARNING**: Authentication with Shiro has not been fully tested in production.
 
-By default, admin endpoints are locked to localhost. To allow remote admin access:
+⚠️ **RECOMMENDATION**: Only use this deployment on private networks with proper network-level security.
+
+For production use with authentication, additional testing and validation is required.
+
+#### Security Modes
+
+##### 1. Open Access Mode (Private Networks Only)
+
+Complete open access with no authentication. **Use only on private networks!**
+
+```yaml
+security:
+  enabled: true
+  adminPassword: "disabled"  # Special value for open access
+```
+
+This mode:
+- ✅ Allows access to all endpoints without authentication
+- ✅ Bypasses Fuseki's localhost-only restrictions
+- ❌ Provides NO security - suitable only for trusted private networks
+
+##### 2. Public Read Access Mode
+
+UI and SPARQL queries are public, writes require authentication:
+
+```yaml
+security:
+  enabled: true
+  adminPassword: "your-secure-password"
+  publicRead: true
+  localhostOnly: false  # Allow remote admin access
+  privateDatasets:  # Mark these as fully private
+    - "internal"
+    - "confidential"
+```
+
+This mode:
+- ✅ Public: UI, SPARQL queries (`/query`, `/sparql`)
+- 🔒 Protected: Write operations, admin endpoints, private datasets
+
+##### 3. Full Authentication Mode
+
+Everything requires authentication (default when `security.enabled=true`):
 
 ```yaml
 security:
   enabled: true
   adminUser: "admin"
   adminPassword: "secure-password"
-  localhostOnly: false  # Enable remote access
+  localhostOnly: false  # Allow remote admin access
 ```
 
-#### Disable Authentication (Not Recommended)
+##### 4. Localhost-Only Admin Access
+
+Admin endpoints only accessible from localhost (default):
+
+```yaml
+security:
+  enabled: true
+  adminPassword: "secure-password"
+  localhostOnly: true  # Restrict admin to localhost
+```
+
+##### 5. No Authentication (Not Recommended)
+
+Disabling security leaves Fuseki with default localhost-only restrictions:
 
 ```yaml
 security:
   enabled: false
 ```
+
+⚠️ **Note**: With `enabled: false`, admin endpoints are still restricted to localhost by Fuseki itself.
 
 ### Persistence
 
@@ -235,8 +292,10 @@ kubectl delete pvc fuseki-jena-fuseki-data
 | `dataset.allowUpdate` | Allow SPARQL updates | `true` |
 | `security.enabled` | Enable Shiro authentication | `true` |
 | `security.adminUser` | Admin username | `admin` |
-| `security.adminPassword` | Admin password (auto-generated if empty) | `""` |
-| `security.localhostOnly` | Restrict admin to localhost | `true` |
+| `security.adminPassword` | Admin password (auto-generated if empty, use "disabled" for open access) | `""` |
+| `security.localhostOnly` | Restrict admin endpoints to localhost | `true` |
+| `security.publicRead` | Allow public read access (queries public, writes protected) | `false` |
+| `security.privateDatasets` | List of dataset names requiring full authentication | `[]` |
 | `persistence.enabled` | Enable persistence | `true` |
 | `persistence.size` | PVC size | `5Gi` |
 | `persistence.storageClass` | Storage class | `default` |

@@ -31,21 +31,38 @@ dataset:
   location: "/fuseki/databases"
 
 ## Security Configuration
+## WARNING: Authentication with Shiro has not been fully tested in production.
+## RECOMMENDATION: Only use this deployment on private networks with proper network-level security.
+## For production use with authentication, additional testing and validation is required.
 security:
   ## Enable Shiro authentication
+  ## When false: No authentication (Fuseki may still restrict admin endpoints to localhost)
+  ## When true: Shiro-based authentication and access control
   enabled: true
+
   ## Admin username
   adminUser: "admin"
+
   ## Admin password (leave empty to auto-generate)
+  ## Special value "disabled": Enables open access mode (no authentication, all endpoints public)
+  ## WARNING: Use "disabled" only on private networks! This removes ALL security restrictions.
   adminPassword: ""
+
   ## Allow localhost-only access to admin endpoints
+  ## When true: Admin endpoints (/$/datasets, /$/server, etc.) only accessible from localhost
+  ## When false: Admin endpoints accessible from any network (requires authentication if enabled)
+  ## This setting only applies when security.enabled=true and adminPassword!="disabled"
   localhostOnly: true
+
   ## Public read access mode
   ## When enabled: UI and SPARQL queries are public, writes require auth
   ## When disabled: Everything requires authentication
+  ## This setting only applies when security.enabled=true and adminPassword!="disabled"
   publicRead: false
+
   ## List of dataset names that require authentication for all operations
   ## Example: ["private", "internal", "confidential"]
+  ## This setting only applies when publicRead=true
   privateDatasets: []
 
 ## Persistence Configuration
