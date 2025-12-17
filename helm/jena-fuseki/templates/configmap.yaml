@@ -53,8 +53,33 @@ data:
     /$/server/** = authcBasic,roles[{{ .Values.security.adminUser }}]
     {{- end }}
 
-    {{- if .Values.ui.enabled }}
-    ## Web UI (authentication required)
+    {{- if .Values.security.publicRead }}
+    ## Public read access mode - UI and queries are public, writes require auth
+
+    ## UI files - public access
+    /index.html = anon
+    /static/** = anon
+    /favicon.ico = anon
+
+    ## Private datasets (fully protected)
+    {{- range .Values.security.privateDatasets }}
+    /{{ . }}/** = authcBasic,roles[{{ $.Values.security.adminUser }}]
+    {{- end }}
+
+    ## Write operations - require authentication
+    /**/update = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /**/data = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /**/upload = authcBasic,roles[{{ .Values.security.adminUser }}]
+
+    ## Read operations - public access
+    /**/query = anon
+    /**/sparql = anon
+    /**/get = anon
+
+    ## Everything else - public (allows browsing datasets)
+    /** = anon
+    {{- else if .Values.ui.enabled }}
+    ## Web UI (authentication required for everything)
     /index.html = authcBasic,roles[{{ .Values.security.adminUser }}]
     /** = authcBasic,roles[{{ .Values.security.adminUser }}]
     {{- else }}

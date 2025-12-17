@@ -11,6 +11,10 @@ security:
   adminUser: "admin"
   adminPassword: ""  # Auto-generated, retrieve with kubectl
   localhostOnly: false  # Allow remote administration
+  publicRead: true  # Allow public SPARQL queries, require auth for writes
+  privateDatasets:  # Mark these datasets as private (require auth for all operations)
+    - "internal"
+    - "confidential"
 
 # Persistence
 persistence:

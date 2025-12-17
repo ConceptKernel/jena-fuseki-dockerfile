@@ -40,6 +40,13 @@ security:
   adminPassword: ""
   ## Allow localhost-only access to admin endpoints
   localhostOnly: true
+  ## Public read access mode
+  ## When enabled: UI and SPARQL queries are public, writes require auth
+  ## When disabled: Everything requires authentication
+  publicRead: false
+  ## List of dataset names that require authentication for all operations
+  ## Example: ["private", "internal", "confidential"]
+  privateDatasets: []
 
 ## Persistence Configuration
 persistence:
