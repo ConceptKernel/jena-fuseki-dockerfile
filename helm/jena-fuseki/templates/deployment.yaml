@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jena-fuseki.fullname" . }}
+  labels:
+    {{- include "jena-fuseki.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "jena-fuseki.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      labels:
+        {{- include "jena-fuseki.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: fuseki
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if not .Values.ui.enabled }}
+          args:
+            {{- if .Values.dataset.allowUpdate }}
+            - "--update"
+            {{- end }}
+            {{- if eq .Values.dataset.type "tdb2" }}
+            - "--loc={{ .Values.dataset.location }}"
+            {{- else if eq .Values.dataset.type "mem" }}
+            - "--mem"
+            {{- end }}
+            - "/{{ .Values.dataset.name }}"
+          {{- end }}
+          env:
+            - name: JAVA_OPTIONS
+              value: {{ .Values.javaOptions | quote }}
+            {{- if .Values.security.enabled }}
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jena-fuseki.fullname" . }}-admin
+                  key: password
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 3030
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: run
+              mountPath: /fuseki/run
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
+            {{- if .Values.security.enabled }}
+            - name: config
+              mountPath: /fuseki/run/shiro.ini
+              subPath: shiro.ini
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: run
+          emptyDir: {}
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "jena-fuseki.fullname" . }}-data
+        {{- end }}
+        {{- if .Values.security.enabled }}
+        - name: config
+          configMap:
+            name: {{ include "jena-fuseki.fullname" . }}-config
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

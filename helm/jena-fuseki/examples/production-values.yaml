@@ -1,0 +1,46 @@
+# Production deployment example for Jena Fuseki
+# Usage: helm install fuseki ./jena-fuseki -f examples/production-values.yaml
+
+# Enable Web UI
+ui:
+  enabled: true
+
+# Security configuration
+security:
+  enabled: true
+  adminUser: "admin"
+  adminPassword: ""  # Auto-generated, retrieve with kubectl
+  localhostOnly: false  # Allow remote administration
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: "default"
+  accessMode: ReadWriteOnce
+  size: 20Gi
+  mountPath: /fuseki/databases
+
+# Gateway API configuration (adjust for your setup)
+gatewayAPI:
+  enabled: true
+  parentRefs:
+    - name: multi-domain-gateway
+      namespace: gateway-system
+      sectionName: conceptkernel-dev-https
+  hostnames:
+    - jena.conceptkernel.dev
+
+# Resources for production workload
+resources:
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+# Java heap settings
+javaOptions: "-Xmx6g -Xms2g"
+
+# Single replica (required for RWO volumes)
+replicaCount: 1

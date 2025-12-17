@@ -1,0 +1,83 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Apache Jena Fuseki {{ .Chart.AppVersion }} has been deployed.
+
+{{- if .Values.ui.enabled }}
+
+## Web UI Access
+
+The Fuseki web UI is ENABLED. You can access it at:
+
+{{- if .Values.gatewayAPI.enabled }}
+  {{- range .Values.gatewayAPI.hostnames }}
+  https://{{ . }}/
+  {{- end }}
+{{- else if .Values.ingress.enabled }}
+  {{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}/
+  {{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "jena-fuseki.fullname" . }} 3030:3030
+  Then open: http://localhost:3030/
+{{- end }}
+
+{{- else }}
+
+## SPARQL Endpoint
+
+Fuseki is running in headless mode (UI disabled).
+Dataset "{{ .Values.dataset.name }}" is available at:
+
+{{- if .Values.gatewayAPI.enabled }}
+  {{- range .Values.gatewayAPI.hostnames }}
+  SPARQL Query: https://{{ . }}/{{ $.Values.dataset.name }}/query
+  SPARQL Update: https://{{ . }}/{{ $.Values.dataset.name }}/update
+  {{- end }}
+{{- else if .Values.ingress.enabled }}
+  {{- range .Values.ingress.hosts }}
+  SPARQL Query: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}/{{ $.Values.dataset.name }}/query
+  SPARQL Update: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}/{{ $.Values.dataset.name }}/update
+  {{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "jena-fuseki.fullname" . }} 3030:3030
+  SPARQL Query: http://localhost:3030/{{ .Values.dataset.name }}/query
+  SPARQL Update: http://localhost:3030/{{ .Values.dataset.name }}/update
+{{- end }}
+
+{{- end }}
+
+{{- if .Values.security.enabled }}
+
+## Authentication
+
+Username: {{ .Values.security.adminUser }}
+Password: Get the password with:
+  kubectl get secret {{ include "jena-fuseki.fullname" . }}-admin -o jsonpath='{.data.password}' | base64 -d
+
+{{- end }}
+
+## Useful Commands
+
+# Get pod status
+kubectl get pods -l app.kubernetes.io/name={{ include "jena-fuseki.name" . }}
+
+# View logs
+kubectl logs -l app.kubernetes.io/name={{ include "jena-fuseki.name" . }}
+
+# Access server info
+{{- if .Values.gatewayAPI.enabled }}
+  {{- range .Values.gatewayAPI.hostnames }}
+curl -u {{ $.Values.security.adminUser }}:<password> https://{{ . }}/$/server
+  {{- end }}
+{{- else }}
+kubectl port-forward svc/{{ include "jena-fuseki.fullname" . }} 3030:3030
+curl -u {{ .Values.security.adminUser }}:<password> http://localhost:3030/$/server
+{{- end }}
+
+## Documentation
+
+- Chart Repository: https://github.com/ConceptKernel/jena-fuseki-dockerfile
+- Apache Jena Fuseki: https://jena.apache.org/documentation/fuseki2/
+- Docker Hub: https://hub.docker.com/r/conceptkernel/jena-fuseki
+
+Enjoy your SPARQL server!

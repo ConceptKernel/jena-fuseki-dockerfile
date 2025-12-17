@@ -1,0 +1,73 @@
+{{- if .Values.security.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "jena-fuseki.fullname" . }}-config
+  labels:
+    {{- include "jena-fuseki.labels" . | nindent 4 }}
+data:
+  shiro.ini: |
+    [main]
+    # Development
+    ssl.enabled = false
+
+    plainMatcher=org.apache.shiro.authc.credential.SimpleCredentialsMatcher
+
+    # Session Management
+    sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
+    securityManager.sessionManager = $sessionManager
+
+    [users]
+    {{ .Values.security.adminUser }}={{ include "jena-fuseki.adminPassword" . }}
+
+    [roles]
+    {{ .Values.security.adminUser }} = *
+
+    [urls]
+    ## Public endpoints (no authentication required)
+    /$/ping = anon
+    /$/stats = anon
+    /$/metrics = anon
+
+    {{- if .Values.security.localhostOnly }}
+    ## Admin endpoints (localhost + authentication required)
+    /$/stats/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/backups/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/compact/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- else }}
+    ## Admin endpoints (authentication required, external access allowed)
+    /$/stats/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/backups/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/compact/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- end }}
+
+    {{- if .Values.ui.enabled }}
+    ## Web UI (authentication required)
+    /index.html = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- else }}
+    ## SPARQL endpoints (authentication required for updates)
+    /**/update = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /**/data = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /**/upload = authcBasic,roles[{{ .Values.security.adminUser }}]
+
+    ## SPARQL queries (authentication required)
+    /**/query = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /**/sparql = authcBasic,roles[{{ .Values.security.adminUser }}]
+
+    ## Everything else
+    /** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- end }}
+{{- end }}

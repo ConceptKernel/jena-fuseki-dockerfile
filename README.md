@@ -8,11 +8,13 @@
 
 ## 🚀 Features
 
+- ✅ **Web UI Included**: Full Vue 3 admin interface with SPARQL query editor
 - ✅ **Multi-arch Support**: linux/amd64 and linux/arm64
-- ✅ **Minimal Size**: Alpine Linux base with custom JDK via jlink
-- ✅ **Latest Version**: Based on Apache Jena Fuseki 5.6.0
-- ✅ **Security First**: Runs as non-root user, minimal attack surface
+- ✅ **Minimal Size**: ~150MB Alpine Linux base with custom JDK via jlink
+- ✅ **Latest Version**: Based on Apache Jena Fuseki 5.6.0 (October 2025)
+- ✅ **Security First**: Shiro authentication, runs as non-root user, minimal attack surface
 - ✅ **Production Ready**: Health checks, proper logging, configurable resources
+- ✅ **Helm Chart**: Official Helm chart for Kubernetes deployments
 - ✅ **Fast Builds**: Optimized layer caching and multi-stage builds
 - ✅ **Verified Downloads**: SHA1 checksum verification of all artifacts
 
@@ -70,6 +72,35 @@ Run:
 docker-compose up -d
 ```
 
+### Using Helm (Kubernetes)
+
+The official Helm chart provides a production-ready deployment with:
+- Web UI with Shiro authentication
+- Persistent storage for databases
+- Gateway API HTTPRoute support
+- Configurable security policies
+- Resource limits and health checks
+
+```bash
+# Add the repository
+git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
+cd jena-fuseki-dockerfile/helm
+
+# Install with default settings (UI enabled, authentication enabled)
+helm install fuseki ./jena-fuseki
+
+# Install with custom values
+helm install fuseki ./jena-fuseki -f ./jena-fuseki/examples/production-values.yaml
+
+# Get the admin password
+kubectl get secret fuseki-jena-fuseki-admin -o jsonpath='{.data.password}' | base64 -d
+
+# Port forward to access locally
+kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
+```
+
+For detailed Helm chart documentation, see [helm/jena-fuseki/README.md](helm/jena-fuseki/README.md).
+
 ## 🏗️ Building from Source
 
 ### Prerequisites
@@ -98,6 +129,16 @@ docker buildx build \
 
 ## ⚙️ Configuration
 
+### Web UI and Authentication
+
+The container includes the full Fuseki web UI with:
+- **Admin Interface**: Create/manage datasets, view server stats
+- **SPARQL Query Editor**: YASGUI-powered query interface with syntax highlighting
+- **Shiro Authentication**: Configurable user authentication and authorization
+- **Default Credentials**: `admin` / `pw` (change via Shiro config or Helm chart)
+
+The UI is automatically extracted from the JAR on first startup and served from `$FUSEKI_BASE/webapp`.
+
 ### Environment Variables
 
 | Variable | Default | Description |
@@ -105,15 +146,19 @@ docker buildx build \
 | `JAVA_OPTIONS` | `-Xmx2048m -Xms2048m` | JVM memory settings |
 | `JENA_VERSION` | `5.6.0` | Apache Jena version (build-time) |
 | `FUSEKI_DIR` | `/fuseki` | Fuseki installation directory |
+| `FUSEKI_BASE` | `/fuseki/run` | Runtime directory (config, logs, UI files) |
 
 ### Volumes
 
 | Path | Purpose |
 |------|---------|
-| `/fuseki/databases` | Persistent RDF databases |
+| `/fuseki/databases` | Persistent RDF databases (recommended for production) |
+| `/fuseki/run` | Runtime files (config, logs, UI, system state) |
 | `/fuseki/backups` | Database backups |
 | `/fuseki/configuration` | Fuseki configuration files |
 | `/fuseki/logs` | Application logs |
+
+**Note**: For production deployments with persistent data, mount `/fuseki/databases` to preserve your datasets across container restarts.
 
 ### Ports
 
@@ -161,13 +206,63 @@ curl -X POST http://localhost:3030/mydataset/data \
 
 ## 🎯 Production Deployment
 
-### Kubernetes
+### Kubernetes with Helm (Recommended)
 
-```yaml
+For production Kubernetes deployments, use the official Helm chart:
+
+```bash
+# Clone the repository
+git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
+
+# Install with production settings
+helm install fuseki ./jena-fuseki-dockerfile/helm/jena-fuseki \
+  -f ./jena-fuseki-dockerfile/helm/jena-fuseki/examples/production-values.yaml
+
+# Or customize inline
+helm install fuseki ./jena-fuseki-dockerfile/helm/jena-fuseki \
+  --set persistence.size=50Gi \
+  --set resources.limits.memory=8Gi \
+  --set security.adminPassword=your-secure-password
+```
+
+The Helm chart includes:
+- 🔐 Shiro authentication with auto-generated passwords
+- 💾 Persistent volume claims for data
+- 🌐 Gateway API HTTPRoute support
+- 📊 Health checks and monitoring
+- ⚙️ Configurable resources and security policies
+
+See [helm/jena-fuseki/README.md](helm/jena-fuseki/README.md) for complete documentation.
+
+### Kubernetes with kubectl (Manual)
+
+For manual deployments without Helm:
+
+```bash
+# Create namespace
+kubectl create namespace fuseki
+
+# Create PVC
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fuseki-data
+  namespace: fuseki
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 20Gi
+EOF
+
+# Deploy Fuseki
+kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jena-fuseki
+  namespace: fuseki
 spec:
   replicas: 1
   selector:
@@ -180,7 +275,7 @@ spec:
     spec:
       containers:
       - name: fuseki
-        image: conceptkernel/jena-fuseki:5.6.0
+        image: conceptkernel/jena-fuseki:latest
         ports:
         - containerPort: 3030
         env:
@@ -211,12 +306,13 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: fuseki-data-pvc
+          claimName: fuseki-data
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: jena-fuseki
+  namespace: fuseki
 spec:
   selector:
     app: jena-fuseki
@@ -224,6 +320,7 @@ spec:
   - port: 3030
     targetPort: 3030
   type: ClusterIP
+EOF
 ```
 
 ## 🔍 Image Details
@@ -270,6 +367,32 @@ spec:
 - [Apache Jena Documentation](https://jena.apache.org/documentation/)
 - [Fuseki Server Documentation](https://jena.apache.org/documentation/fuseki2/)
 - [SPARQL 1.1 Specification](https://www.w3.org/TR/sparql11-query/)
+- [Helm Chart Documentation](helm/jena-fuseki/README.md)
+
+## 🔧 Technical Notes
+
+### Web UI Implementation
+
+This container uses `jena-fuseki-server-5.6.0.jar` (55.9MB fat JAR) which includes:
+- The full Fuseki server with UI and admin functionality
+- Apache Shiro security framework
+- Prometheus metrics endpoint
+- YASGUI SPARQL query editor (Vue 3 application)
+
+The UI files are embedded in the JAR at `/webapp/*`. On first startup, the entrypoint script extracts them to `$FUSEKI_BASE/webapp` where Fuseki's `FMod_UI` module can serve them.
+
+**Main Class**: `org.apache.jena.fuseki.main.cmds.FusekiServerCmd`
+**UI Module**: `org.apache.jena.fuseki.mod.ui.FMod_UI`
+
+For headless deployments without UI, the alternative main class `org.apache.jena.fuseki.main.cmds.FusekiMainCmd` can be used.
+
+### JAR Selection
+
+There are two Fuseki JARs available:
+- `jena-fuseki-server-*.jar` (55.9MB) - Full server with UI, admin, metrics (this image)
+- `jena-fuseki-main-*.jar` (183KB) - Library JAR, not executable
+
+This image uses the server JAR for complete functionality.
 
 ## 🤝 Contributing
 

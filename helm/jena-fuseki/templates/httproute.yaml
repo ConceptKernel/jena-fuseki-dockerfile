@@ -1,0 +1,23 @@
+{{- if .Values.gatewayAPI.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "jena-fuseki.fullname" . }}
+  labels:
+    {{- include "jena-fuseki.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.gatewayAPI.parentRefs | nindent 4 }}
+  {{- with .Values.gatewayAPI.hostnames }}
+  hostnames:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "jena-fuseki.fullname" . }}
+          port: {{ .Values.service.port }}
+{{- end }}

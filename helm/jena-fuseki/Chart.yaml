@@ -1,0 +1,18 @@
+apiVersion: v2
+name: jena-fuseki
+description: Apache Jena Fuseki SPARQL server with optional web UI
+type: application
+version: 1.0.0
+appVersion: "5.6.0"
+keywords:
+  - sparql
+  - rdf
+  - semantic-web
+  - triplestore
+home: https://github.com/ConceptKernel/jena-fuseki-dockerfile
+sources:
+  - https://github.com/apache/jena
+  - https://github.com/ConceptKernel/jena-fuseki-dockerfile
+maintainers:
+  - name: ConceptKernel
+icon: https://jena.apache.org/images/jena-logo/jena-logo-jeen-tiny.png

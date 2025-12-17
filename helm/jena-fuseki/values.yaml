@@ -1,0 +1,140 @@
+## ============================================================================
+## Apache Jena Fuseki Helm Chart Values
+## ============================================================================
+
+## Container image configuration
+image:
+  repository: conceptkernel/jena-fuseki
+  tag: "5.6.0"
+  pullPolicy: IfNotPresent
+
+## Number of replicas (use 1 for RWO volumes)
+replicaCount: 1
+
+## Web UI Configuration
+## When enabled, Fuseki starts in admin/UI mode without pre-configured datasets
+## Datasets can be created through the web interface
+ui:
+  enabled: true  # Set to false for headless SPARQL server mode
+
+## Dataset Configuration
+## Only used when ui.enabled = false
+## When UI is enabled, datasets are managed through the web interface
+dataset:
+  ## Dataset name (accessible at /NAME)
+  name: "ds"
+  ## Enable update operations
+  allowUpdate: true
+  ## Dataset type: mem (in-memory), tdb2 (persistent)
+  type: "tdb2"
+  ## Location for persistent datasets (only for tdb2)
+  location: "/fuseki/databases"
+
+## Security Configuration
+security:
+  ## Enable Shiro authentication
+  enabled: true
+  ## Admin username
+  adminUser: "admin"
+  ## Admin password (leave empty to auto-generate)
+  adminPassword: ""
+  ## Allow localhost-only access to admin endpoints
+  localhostOnly: true
+
+## Persistence Configuration
+persistence:
+  enabled: true
+  ## Storage class (use "default" for cluster default)
+  storageClass: "default"
+  ## Access mode (ReadWriteOnce for single-node)
+  accessMode: ReadWriteOnce
+  ## Size of persistent volume
+  size: 5Gi
+  ## Mount path for persistent data
+  mountPath: /fuseki/databases
+
+## Resource limits
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+## Java options
+javaOptions: "-Xmx2g -Xms2g"
+
+## Service configuration
+service:
+  type: ClusterIP
+  port: 3030
+  annotations: {}
+
+## Ingress/HTTPRoute configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: fuseki.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+## Gateway API HTTPRoute configuration
+gatewayAPI:
+  enabled: false
+  parentRefs:
+    - name: gateway
+      namespace: gateway-system
+      sectionName: https
+  hostnames:
+    - fuseki.example.com
+
+## Pod security context
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+## Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+## Health check configuration
+livenessProbe:
+  httpGet:
+    path: /$/ping
+    port: 3030
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /$/ping
+    port: 3030
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+## Node selector
+nodeSelector: {}
+
+## Tolerations
+tolerations: []
+
+## Affinity
+affinity: {}
