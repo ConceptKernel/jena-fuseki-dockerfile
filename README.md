@@ -18,16 +18,115 @@
 - ✅ **Fast Builds**: Optimized layer caching and multi-stage builds
 - ✅ **Verified Downloads**: SHA1 checksum verification of all artifacts
 
+## 📖 About This Project
+
+This project provides optimized Docker images and Kubernetes Helm charts for **Apache Jena Fuseki**, the industry-standard SPARQL server and triple store.
+
+### What is Apache Jena Fuseki?
+
+[Apache Jena Fuseki](https://jena.apache.org/documentation/fuseki2/) is a SPARQL 1.1 server that provides:
+- SPARQL query and update endpoints
+- RESTful HTTP interface for RDF data management
+- Web-based admin UI for dataset management
+- Support for TDB2 persistent storage and in-memory datasets
+- Integration with Apache Jena's semantic web toolkit
+
+### This Repository (jena-fuseki-dockerfile)
+
+**Repository**: [github.com/ConceptKernel/jena-fuseki-dockerfile](https://github.com/ConceptKernel/jena-fuseki-dockerfile)
+**Docker Hub**: [hub.docker.com/r/conceptkernel/jena-fuseki](https://hub.docker.com/r/conceptkernel/jena-fuseki)
+**License**: Apache License 2.0
+
+This repository maintains:
+- Optimized multi-stage Dockerfile for minimal image size
+- Production-ready Kubernetes Helm chart
+- Documentation and deployment examples
+- Automated builds for both amd64 and arm64 architectures
+
+### Versioning Scheme
+
+**Current Release**: `v5.6.0-1`
+
+We follow a modified semantic versioning scheme:
+
+```
+v5.6.0-1
+  │││  └─ Build number (incremented for jena-fuseki-dockerfile changes)
+  │││
+  └┴┴─ Apache Jena Fuseki version (5.6.0)
+```
+
+- **First three numbers** (`5.6.0`): Match the upstream Apache Jena Fuseki release version
+- **Build number after dash** (`-1`): Incremented for patches, documentation updates, or Helm chart changes in this repository
+- This ensures version alignment with Apache Jena while allowing independent updates
+
+**Example**:
+- `v5.6.0-1`: Initial release based on Fuseki 5.6.0
+- `v5.6.0-2`: Updated Helm chart for same Fuseki version
+- `v5.7.0-1`: New Fuseki upstream release
+
+### Official Apache Jena Resources
+
+- **Apache Jena Homepage**: https://jena.apache.org/
+- **Fuseki Documentation**: https://jena.apache.org/documentation/fuseki2/
+- **Fuseki GitHub**: https://github.com/apache/jena (see `jena-fuseki2/` directory)
+- **Fuseki Docker Guide**: https://jena.apache.org/documentation/fuseki2/fuseki-docker
+- **SPARQL 1.1 Specification**: https://www.w3.org/TR/sparql11-query/
+- **Apache Jena Releases**: https://jena.apache.org/download/
+
+### Key Differences from Official Apache Jena
+
+This image provides several optimizations over building from source:
+
+| Feature | This Image | Official WAR |
+|---------|-----------|-------------|
+| Docker Image | ✅ Ready to use | ❌ DIY |
+| Image Size | ~150MB | N/A |
+| Multi-arch | ✅ amd64 + arm64 | Source only |
+| Kubernetes Helm Chart | ✅ Included | ❌ Not provided |
+| UI Extraction | ✅ Automatic | Manual setup |
+| JDK Optimization | ✅ jlink minimal JDK | Full JRE required |
+
 ## 📦 Quick Start
 
-### Pull and Run
+### Basic Docker Run
+
+The simplest way to get started:
 
 ```bash
 # Pull the latest image
-docker pull conceptkernel/jena-fuseki:latest
+docker pull conceptkernel/jena-fuseki:5.6.0
 
-# Run Fuseki server
-docker run -p 3030:3030 conceptkernel/jena-fuseki:latest
+# Run Fuseki server with UI
+docker run -d \
+  --name jena-fuseki \
+  -p 3030:3030 \
+  conceptkernel/jena-fuseki:5.6.0
+
+# Access the UI in your browser
+open http://localhost:3030
+```
+
+The UI will be immediately available at `http://localhost:3030` with full admin capabilities.
+
+### Docker Run with Persistence
+
+For persistent data across container restarts:
+
+```bash
+# Create a volume for persistent storage
+docker volume create fuseki-data
+
+# Run with mounted volume
+docker run -d \
+  --name jena-fuseki \
+  -p 3030:3030 \
+  -v fuseki-data:/fuseki/databases \
+  -e JAVA_OPTIONS="-Xmx4g -Xms2g" \
+  conceptkernel/jena-fuseki:5.6.0
+
+# View logs
+docker logs -f jena-fuseki
 
 # Access the UI
 open http://localhost:3030
