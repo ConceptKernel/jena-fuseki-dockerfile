@@ -11,7 +11,9 @@ data:
     # Development
     ssl.enabled = false
 
-    plainMatcher=org.apache.shiro.authc.credential.SimpleCredentialsMatcher
+    # Basic Auth filter
+    authcBasic = org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter
+    authcBasic.applicationName = Apache Jena Fuseki
 
     # Session Management
     sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
@@ -34,7 +36,6 @@ data:
 
     ## Admin endpoints - require authentication
     /$/stats/** = authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/datasets = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/datasets/** = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/tasks = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/tasks/** = authcBasic,roles[{{ .Values.security.adminUser }}]
