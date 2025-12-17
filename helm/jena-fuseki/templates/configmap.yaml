@@ -29,19 +29,10 @@ data:
     /$/stats = anon
     /$/metrics = anon
 
-    {{- if .Values.security.localhostOnly }}
-    ## Admin endpoints (localhost + authentication required)
-    /$/stats/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/datasets = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/datasets/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/tasks = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/tasks/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/backups/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/compact/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/server = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    /$/server/** = localhostFilter,authcBasic,roles[{{ .Values.security.adminUser }}]
-    {{- else }}
-    ## Admin endpoints (authentication required, external access allowed)
+    {{- if .Values.security.publicRead }}
+    ## Public read access mode - UI and queries are public, writes require auth
+
+    ## Admin endpoints - require authentication
     /$/stats/** = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/datasets = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/datasets/** = authcBasic,roles[{{ .Values.security.adminUser }}]
@@ -51,10 +42,6 @@ data:
     /$/compact/** = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/server = authcBasic,roles[{{ .Values.security.adminUser }}]
     /$/server/** = authcBasic,roles[{{ .Values.security.adminUser }}]
-    {{- end }}
-
-    {{- if .Values.security.publicRead }}
-    ## Public read access mode - UI and queries are public, writes require auth
 
     ## UI files - public access
     /index.html = anon
@@ -78,7 +65,34 @@ data:
 
     ## Everything else - public (allows browsing datasets)
     /** = anon
-    {{- else if .Values.ui.enabled }}
+    {{- else }}
+
+    {{- if .Values.security.localhostOnly }}
+    ## Admin endpoints (localhost + authentication required)
+    ## Note: localhostFilter not implemented, using authcBasic instead
+    /$/stats/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/backups/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/compact/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- else }}
+    ## Admin endpoints (authentication required, external access allowed)
+    /$/stats/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/datasets/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/tasks/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/backups/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/compact/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server = authcBasic,roles[{{ .Values.security.adminUser }}]
+    /$/server/** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- end }}
+
+    {{- if .Values.ui.enabled }}
     ## Web UI (authentication required for everything)
     /index.html = authcBasic,roles[{{ .Values.security.adminUser }}]
     /** = authcBasic,roles[{{ .Values.security.adminUser }}]
@@ -94,5 +108,6 @@ data:
 
     ## Everything else
     /** = authcBasic,roles[{{ .Values.security.adminUser }}]
+    {{- end }}
     {{- end }}
 {{- end }}
