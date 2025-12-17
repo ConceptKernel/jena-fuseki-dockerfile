@@ -31,7 +31,10 @@ data:
     /$/stats = anon
     /$/metrics = anon
 
-    {{- if .Values.security.publicRead }}
+    {{- if eq (include "jena-fuseki.adminPassword" .) "disabled" }}
+    ## Open access mode - no authentication required
+    /** = anon
+    {{- else if .Values.security.publicRead }}
     ## Public read access mode - UI and queries are public, writes require auth
 
     ## Admin endpoints - require authentication
