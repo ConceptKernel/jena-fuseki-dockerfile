@@ -1,0 +1,27 @@
+# Build artifacts
+*.jar
+*.tar.gz
+*.zip
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Fuseki runtime
+databases/
+backups/
+configuration/
+
+# Test data
+test-data/
