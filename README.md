@@ -47,7 +47,7 @@ This repository maintains:
 
 ### Versioning Scheme
 
-**Current Release**: `v5.6.0-1`
+**Current Release**: `v5.6.0-2`
 
 We follow a modified semantic versioning scheme:
 

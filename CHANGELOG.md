@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to a modified semantic versioning scheme where the first three numbers match the Apache Jena Fuseki version, and the build number after the dash is incremented for repository-specific changes.
 
-## [Unreleased]
+## [v5.6.0-2] - 2025-12-18
 
 ### Added
 
@@ -48,6 +48,17 @@ and this project adheres to a modified semantic versioning scheme where the firs
 - Added extension documentation with features, use cases, and links to Apache Jena docs
 - Updated Features list to highlight inference and extensions support
 - Added Values Reference table entries for all new configuration options
+
+### Fixed
+- **Assembler Config Parsing**: Added missing `@prefix : <#> .` declaration to all inference presets
+  - Resolves "Undefined prefix" Turtle parsing error
+  - Affects rdfs, owl, owlmicro, and owlmini preset configurations
+  - Required for proper namespace resolution of :service, :dataset, :model, :baseModel references
+
+### Testing
+- ✅ Extension auto-download: jena-text successfully downloads from Maven Central (138.5KB)
+- ✅ RDFS inference: Assembler config loads correctly, /dataset service created with reasoning endpoints
+- ✅ Helm chart: ConfigMaps render correctly, volumes mount properly, --config flag passes successfully
 
 ## [v5.6.0-1] - 2025-12-17
 
@@ -150,4 +161,5 @@ v5.6.0-1
 
 ---
 
+[v5.6.0-2]: https://github.com/ConceptKernel/jena-fuseki-dockerfile/releases/tag/v5.6.0-2
 [v5.6.0-1]: https://github.com/ConceptKernel/jena-fuseki-dockerfile/releases/tag/v5.6.0-1
