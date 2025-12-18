@@ -14,7 +14,7 @@
 - ✅ **Latest Version**: Based on Apache Jena Fuseki 5.6.0 (October 2025)
 - ✅ **Security First**: Shiro authentication, runs as non-root user, minimal attack surface
 - ✅ **Production Ready**: Health checks, proper logging, configurable resources
-- ✅ **Helm Chart**: Official Helm chart for Kubernetes deployments
+- ✅ **Helm Chart**: Community Helm chart for Kubernetes deployments (by ConceptKernel)
 - ✅ **Fast Builds**: Optimized layer caching and multi-stage builds
 - ✅ **Verified Downloads**: SHA1 checksum verification of all artifacts
 - ✅ **Inference Support**: Built-in RDFS and OWL reasoners with preset configurations
@@ -76,18 +76,18 @@ v5.6.0-1
 - **SPARQL 1.1 Specification**: https://www.w3.org/TR/sparql11-query/
 - **Apache Jena Releases**: https://jena.apache.org/download/
 
-### Key Differences from Official Apache Jena
+### What This Repository Adds
 
-This image provides several optimizations over building from source:
+**Apache Jena provides excellent binary distributions** - this repository simply containerizes them for easier deployment. We add:
 
-| Feature | This Image | Official WAR |
-|---------|-----------|-------------|
-| Docker Image | ✅ Ready to use | ❌ DIY |
-| Image Size | ~150MB | N/A |
-| Multi-arch | ✅ amd64 + arm64 | Source only |
-| Kubernetes Helm Chart | ✅ Included | ❌ Not provided |
-| UI Extraction | ✅ Automatic | Manual setup |
-| JDK Optimization | ✅ jlink minimal JDK | Full JRE required |
+- **🐳 Production-ready Docker images** - Pre-built, optimized, multi-arch containers
+- **☸️ Kubernetes Helm chart** - Community-maintained deployment for K8s (by ConceptKernel)
+- **📦 Minimal size** - ~150MB using Alpine Linux and jlink-optimized JDK
+- **🚀 Zero-config deployment** - UI auto-extraction, health checks included
+- **🔒 Security defaults** - Non-root user, Shiro auth pre-configured
+- **📚 Documentation** - Deployment examples, configuration guides
+
+**All credit to Apache Jena** for the outstanding SPARQL server - we just make it easier to deploy in containerized environments.
 
 ## 📦 Quick Start
 
@@ -177,7 +177,7 @@ docker-compose up -d
 
 **Helm Chart Version**: `1.1.0` | **App Version**: `5.6.0`
 
-The official Helm chart provides a production-ready, configurable deployment with extensive options for security, storage, networking, and advanced features.
+The ConceptKernel Helm chart provides a production-ready, configurable deployment with extensive options for security, storage, networking, and advanced features.
 
 #### Quick Start
 
@@ -576,7 +576,7 @@ curl -X POST http://localhost:3030/mydataset/data \
 
 ### Kubernetes with Helm (Recommended)
 
-For production Kubernetes deployments, use the official Helm chart:
+For production Kubernetes deployments, use the ConceptKernel Helm chart:
 
 ```bash
 # Clone the repository
