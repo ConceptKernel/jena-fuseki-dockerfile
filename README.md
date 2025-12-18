@@ -175,23 +175,19 @@ docker-compose up -d
 
 ### Using Helm (Kubernetes)
 
-The official Helm chart provides a production-ready deployment with:
-- Web UI with Shiro authentication
-- Persistent storage for databases
-- Gateway API HTTPRoute support
-- Configurable security policies
-- Resource limits and health checks
+**Helm Chart Version**: `1.1.0` | **App Version**: `5.6.0`
+
+The official Helm chart provides a production-ready, configurable deployment with extensive options for security, storage, networking, and advanced features.
+
+#### Quick Start
 
 ```bash
-# Add the repository
+# Clone the repository
 git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
 cd jena-fuseki-dockerfile/helm
 
 # Install with default settings (UI enabled, authentication enabled)
 helm install fuseki ./jena-fuseki
-
-# Install with custom values
-helm install fuseki ./jena-fuseki -f ./jena-fuseki/examples/production-values.yaml
 
 # Get the admin password
 kubectl get secret fuseki-jena-fuseki-admin -o jsonpath='{.data.password}' | base64 -d
@@ -200,7 +196,183 @@ kubectl get secret fuseki-jena-fuseki-admin -o jsonpath='{.data.password}' | bas
 kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
 ```
 
-For detailed Helm chart documentation, see [helm/jena-fuseki/README.md](helm/jena-fuseki/README.md).
+#### Local Development with Minikube (macOS/Linux)
+
+```bash
+# Install minikube
+brew install minikube  # macOS
+# Or follow: https://minikube.sigs.k8s.io/docs/start/
+
+# Start minikube cluster
+minikube start --cpus=4 --memory=8192
+
+# Deploy Fuseki
+cd jena-fuseki-dockerfile/helm
+helm install fuseki ./jena-fuseki
+
+# Access via port-forward
+kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
+open http://localhost:3030
+```
+
+#### Local Development with Colima (macOS - Docker Desktop Alternative)
+
+```bash
+# Install colima (lightweight alternative to Docker Desktop)
+brew install colima
+
+# Start colima with Kubernetes enabled
+colima start --cpu 4 --memory 8 --kubernetes
+
+# Set kubectl context
+kubectl config use-context colima
+
+# Deploy Fuseki
+cd jena-fuseki-dockerfile/helm
+helm install fuseki ./jena-fuseki
+
+# Access locally
+kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
+```
+
+#### Feature Matrix
+
+The Helm chart supports extensive configuration options across multiple categories:
+
+| Category | Feature | Supported | Configuration |
+|----------|---------|-----------|---------------|
+| **UI & Interface** | Web UI Enable/Disable | ✅ | `ui.enabled: true/false` |
+| | SPARQL Query Editor | ✅ | Included with UI |
+| | Dataset Management | ✅ | Included with UI |
+| **Security** | No Authentication (Open) | ✅ | `security.mode: open` |
+| | Public Read Only | ✅ | `security.mode: public-read` |
+| | Full Authentication | ✅ | `security.mode: full-auth` (default) |
+| | Localhost Only | ✅ | `security.mode: localhost` |
+| | Custom Shiro Config | ✅ | `security.customShiroConfig` |
+| **Storage** | Persistent Volume | ✅ | `persistence.enabled: true` |
+| | Storage Size | ✅ | `persistence.size: "10Gi"` |
+| | Storage Class | ✅ | `persistence.storageClass: "default"` |
+| | Custom Mount Path | ✅ | `persistence.mountPath` |
+| **Inference** | RDFS Reasoner | ✅ | `inference.preset: "rdfs"` |
+| | OWL Reasoner | ✅ | `inference.preset: "owl"` |
+| | OWL Micro | ✅ | `inference.preset: "owlmicro"` |
+| | OWL Mini | ✅ | `inference.preset: "owlmini"` |
+| | Custom Assembler | ✅ | `inference.customConfig` |
+| **Extensions** | jena-text (Full-text) | ✅ | `extensions.text.enabled: true` |
+| | jena-geosparql | ✅ | `extensions.geosparql.enabled: true` |
+| | jena-shacl | ✅ | `extensions.shacl.enabled: true` |
+| | jena-shex | ✅ | `extensions.shex.enabled: true` |
+| | Auto-download | ✅ | Automatic from Maven Central |
+| **Networking** | ClusterIP Service | ✅ | `service.type: ClusterIP` (default) |
+| | LoadBalancer Service | ✅ | `service.type: LoadBalancer` |
+| | NodePort Service | ✅ | `service.type: NodePort` |
+| | Traditional Ingress | ✅ | `ingress.enabled: true` |
+| | Gateway API HTTPRoute | ✅ | `gateway.enabled: true` |
+| | Multi-domain Routing | ✅ | `gateway.listeners[].name` |
+| | TLS/HTTPS | ✅ | Via Ingress/Gateway |
+| **Resources** | CPU Requests/Limits | ✅ | `resources.requests/limits.cpu` |
+| | Memory Requests/Limits | ✅ | `resources.requests/limits.memory` |
+| | JVM Heap Size | ✅ | `javaOptions: "-Xmx4g"` |
+| **High Availability** | Multiple Replicas | ⚠️ | `replicas: 2` (read-only replicas) |
+| | Pod Disruption Budget | ❌ | Not yet implemented |
+| | Auto-scaling (HPA) | ❌ | Not yet implemented |
+| **Monitoring** | Liveness Probe | ✅ | `livenessProbe` |
+| | Readiness Probe | ✅ | `readinessProbe` |
+| | Health Endpoint | ✅ | `/$/ping` |
+| | Prometheus Metrics | ⚠️ | Via `/$/stats` (basic) |
+| **Deployment** | Rolling Updates | ✅ | Default strategy |
+| | Pod Security Context | ✅ | Non-root UID 1000 |
+| | Image Pull Policy | ✅ | `image.pullPolicy` |
+| | Node Selector | ✅ | `nodeSelector` |
+| | Tolerations | ✅ | `tolerations` |
+| | Affinity Rules | ✅ | `affinity` |
+
+**Legend:**
+- ✅ **Fully Supported** - Production-ready feature
+- ⚠️ **Partial Support** - Available with limitations
+- ❌ **Not Available** - Planned for future release
+
+#### Configuration Examples
+
+**Open Access (No Authentication)**:
+```yaml
+security:
+  mode: open
+  enabled: false
+```
+
+**Production with Full-Text Search**:
+```yaml
+security:
+  mode: full-auth
+  username: admin
+  password: "YourSecurePassword"
+
+persistence:
+  enabled: true
+  size: "50Gi"
+  storageClass: "premium-rwo"
+
+extensions:
+  text:
+    enabled: true
+    indexDir: /fuseki/text-index
+
+resources:
+  requests:
+    cpu: "2000m"
+    memory: "8Gi"
+  limits:
+    cpu: "4000m"
+    memory: "16Gi"
+
+javaOptions: "-Xmx12g -Xms4g"
+```
+
+**With RDFS Inference**:
+```yaml
+inference:
+  enabled: true
+  preset: rdfs
+```
+
+**Gateway API with Multi-Domain**:
+```yaml
+gateway:
+  enabled: true
+  className: "eg"  # Envoy Gateway
+  listeners:
+    - name: "https"
+      namespace: "gateway-system"
+      gateway: "main-gateway"
+  hosts:
+    - "sparql.example.com"
+```
+
+#### Advanced Deployment
+
+```bash
+# Production deployment with inference and extensions
+helm install fuseki ./jena-fuseki \
+  --set image.tag=5.6.0-2 \
+  --set security.password="SecurePass123" \
+  --set inference.enabled=true \
+  --set inference.preset=rdfs \
+  --set extensions.text.enabled=true \
+  --set persistence.size=100Gi \
+  --set resources.limits.memory=16Gi \
+  --set javaOptions="-Xmx12g"
+
+# Upgrade existing release
+helm upgrade fuseki ./jena-fuseki \
+  --reuse-values \
+  --set image.tag=5.6.0-2
+
+# Uninstall
+helm uninstall fuseki
+```
+
+For complete Helm chart documentation, see [helm/jena-fuseki/README.md](helm/jena-fuseki/README.md).
 
 ## 🏗️ Building from Source
 
