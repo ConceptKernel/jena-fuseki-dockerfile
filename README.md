@@ -181,19 +181,26 @@ The ConceptKernel Helm chart provides a production-ready, configurable deploymen
 
 #### Quick Start
 
-```bash
-# Clone the repository
-git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
-cd jena-fuseki-dockerfile/helm
+**Option 1: Install from OCI Registry (Recommended)**
 
-# Install with default settings (UI enabled, authentication enabled)
-helm install fuseki ./jena-fuseki
+```bash
+# Install directly from GitHub Container Registry
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 1.1.0
 
 # Get the admin password
 kubectl get secret fuseki-jena-fuseki-admin -o jsonpath='{.data.password}' | base64 -d
 
 # Port forward to access locally
 kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
+```
+
+**Option 2: Install from Git Repository**
+
+```bash
+# Clone and install from source
+git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
+cd jena-fuseki-dockerfile/helm
+helm install fuseki ./jena-fuseki
 ```
 
 #### Local Development with Minikube (macOS/Linux)
@@ -352,8 +359,9 @@ gateway:
 #### Advanced Deployment
 
 ```bash
-# Production deployment with inference and extensions
-helm install fuseki ./jena-fuseki \
+# Production deployment with inference and extensions (from OCI registry)
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
+  --version 1.1.0 \
   --set image.tag=5.6.0-2 \
   --set security.password="SecurePass123" \
   --set inference.enabled=true \
@@ -363,8 +371,12 @@ helm install fuseki ./jena-fuseki \
   --set resources.limits.memory=16Gi \
   --set javaOptions="-Xmx12g"
 
+# Or install from local clone with custom values file
+helm install fuseki ./jena-fuseki -f my-values.yaml
+
 # Upgrade existing release
-helm upgrade fuseki ./jena-fuseki \
+helm upgrade fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
+  --version 1.1.0 \
   --reuse-values \
   --set image.tag=5.6.0-2
 
@@ -579,18 +591,22 @@ curl -X POST http://localhost:3030/mydataset/data \
 For production Kubernetes deployments, use the ConceptKernel Helm chart:
 
 ```bash
-# Clone the repository
-git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
-
-# Install with production settings
-helm install fuseki ./jena-fuseki-dockerfile/helm/jena-fuseki \
-  -f ./jena-fuseki-dockerfile/helm/jena-fuseki/examples/production-values.yaml
-
-# Or customize inline
-helm install fuseki ./jena-fuseki-dockerfile/helm/jena-fuseki \
+# Install from OCI registry (recommended)
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
+  --version 1.1.0 \
   --set persistence.size=50Gi \
   --set resources.limits.memory=8Gi \
-  --set security.adminPassword=your-secure-password
+  --set security.password=your-secure-password
+
+# Or use a custom values file
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
+  --version 1.1.0 \
+  -f production-values.yaml
+
+# Or install from local clone
+git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
+helm install fuseki ./jena-fuseki-dockerfile/helm/jena-fuseki \
+  -f production-values.yaml
 ```
 
 The Helm chart includes:
