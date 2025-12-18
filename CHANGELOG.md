@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to a modified semantic versioning scheme where the first three numbers match the Apache Jena Fuseki version, and the build number after the dash is incremented for repository-specific changes.
 
+## [Unreleased]
+
+### Added
+
+#### Inference and Reasoning Support
+- **Built-in Reasoners**: Support for RDFS, OWL, OWL Micro, and OWL Mini reasoners
+- **Preset Configurations**: Four ready-to-use assembler configurations (rdfs, owl, owlmicro, owlmini)
+- **Custom Assembler Support**: Ability to provide custom Turtle-format assembler configurations
+- **Automatic Configuration**: Helm chart conditionally creates assembler ConfigMap and passes --config flag when inference.enabled=true
+- **Documentation**: Comprehensive documentation in both main and Helm README files
+
+#### Extensions Support
+- **Auto-Download System**: Init container automatically downloads extension JARs from Maven Central
+- **Dynamic Classpath**: Entrypoint script detects and loads extension JARs at startup
+- **Four Official Extensions**:
+  - **jena-text**: Lucene-based full-text search for SPARQL queries
+  - **jena-fuseki-geosparql**: GeoSPARQL 1.0 support for geospatial queries
+  - **jena-shacl**: SHACL validation for RDF data quality constraints
+  - **jena-shex**: ShEx validation for RDF schema validation
+- **Version Alignment**: Extension versions automatically match Jena version (5.6.0)
+- **Zero-Config**: Extensions are automatically managed - no manual JAR handling required
+- **EmptyDir Caching**: Extensions cached in ephemeral storage, no image bloat
+
+#### Helm Chart Enhancements
+- Added `inference.enabled`, `inference.preset`, `inference.customConfig` configuration options
+- Added `extensions.text.enabled`, `extensions.geosparql.enabled`, `extensions.shacl.enabled`, `extensions.shex.enabled`
+- Added init container for extension downloads (conditional on extension flags)
+- Added extensions emptyDir volume with read-only mount to main container
+- Added assembler-config ConfigMap for inference support
+- Updated deployment to conditionally pass --config flag when inference enabled
+
+### Changed
+- **entrypoint.sh**: Enhanced to build dynamic classpath including extension JARs
+- **deployment.yaml**: Added init container, volumes, and mounts for extensions and inference
+- **values.yaml**: Added comprehensive configuration sections for inference and extensions
+- **README.md**: Added "Advanced Features" section documenting inference and extensions
+- **Helm README.md**: Added "Inference and Reasoning" and "Extensions" sections with examples
+
+### Documentation
+- Added inference preset documentation with use cases and performance characteristics
+- Added extension documentation with features, use cases, and links to Apache Jena docs
+- Updated Features list to highlight inference and extensions support
+- Added Values Reference table entries for all new configuration options
+
 ## [v5.6.0-1] - 2025-12-17
 
 ### Added

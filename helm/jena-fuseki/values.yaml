@@ -65,6 +65,58 @@ security:
   ## This setting only applies when publicRead=true
   privateDatasets: []
 
+## Inference Configuration
+## Enable RDFS/OWL reasoning using Apache Jena's built-in reasoners
+## Requires assembler configuration (no additional JARs needed)
+inference:
+  ## Enable inference/reasoning
+  enabled: false
+
+  ## Preset configurations:
+  ## - "rdfs": RDFS reasoning (subclass, subproperty, domain, range)
+  ## - "owl": Full OWL reasoning (computationally expensive)
+  ## - "owlmicro": OWL Micro reasoning (subset of OWL, faster)
+  ## - "owlmini": OWL Mini reasoning (minimal OWL subset)
+  ## - "custom": Use customConfig below
+  preset: "rdfs"
+
+  ## Custom assembler configuration (Turtle format)
+  ## Only used when preset="custom"
+  ## See: https://jena.apache.org/documentation/assembler/
+  customConfig: ""
+
+## Extensions Configuration
+## Enable official Apache Jena extension modules
+## Extensions are auto-downloaded from Maven Central during pod initialization
+extensions:
+  ## jena-text: Full-text search using Lucene
+  ## Adds SPARQL text: queries for full-text search
+  ## Docs: https://jena.apache.org/documentation/query/text-query.html
+  text:
+    enabled: false
+    ## Lucene index directory (requires persistence)
+    indexDir: /fuseki/text-index
+
+  ## jena-fuseki-geosparql: GeoSPARQL 1.0 support
+  ## Adds geospatial queries and indexing
+  ## Docs: https://jena.apache.org/documentation/geosparql/
+  geosparql:
+    enabled: false
+    ## Spatial index directory (requires persistence)
+    indexDir: /fuseki/spatial-index
+
+  ## jena-shacl: SHACL validation
+  ## Shape constraint validation for RDF data
+  ## Docs: https://jena.apache.org/documentation/shacl/
+  shacl:
+    enabled: false
+
+  ## jena-shex: ShEx validation
+  ## Shape expressions for RDF validation
+  ## Docs: https://jena.apache.org/documentation/shex/
+  shex:
+    enabled: false
+
 ## Persistence Configuration
 persistence:
   enabled: true

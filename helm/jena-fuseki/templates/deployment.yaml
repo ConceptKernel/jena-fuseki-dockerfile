@@ -21,11 +21,60 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if or .Values.extensions.text.enabled .Values.extensions.geosparql.enabled .Values.extensions.shacl.enabled .Values.extensions.shex.enabled }}
+      initContainers:
+        - name: download-extensions
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              MAVEN_BASE="https://repo1.maven.org/maven2"
+              JENA_VERSION="{{ .Values.image.tag }}"
+
+              echo "Downloading Apache Jena extensions..."
+              {{- if .Values.extensions.text.enabled }}
+              echo "Downloading jena-text ${JENA_VERSION}..."
+              wget -q -O /fuseki/extensions/jena-text-${JENA_VERSION}.jar \
+                ${MAVEN_BASE}/org/apache/jena/jena-text/${JENA_VERSION}/jena-text-${JENA_VERSION}.jar
+              {{- end }}
+              {{- if .Values.extensions.geosparql.enabled }}
+              echo "Downloading jena-fuseki-geosparql ${JENA_VERSION}..."
+              wget -q -O /fuseki/extensions/jena-fuseki-geosparql-${JENA_VERSION}.jar \
+                ${MAVEN_BASE}/org/apache/jena/jena-fuseki-geosparql/${JENA_VERSION}/jena-fuseki-geosparql-${JENA_VERSION}.jar
+              {{- end }}
+              {{- if .Values.extensions.shacl.enabled }}
+              echo "Downloading jena-shacl ${JENA_VERSION}..."
+              wget -q -O /fuseki/extensions/jena-shacl-${JENA_VERSION}.jar \
+                ${MAVEN_BASE}/org/apache/jena/jena-shacl/${JENA_VERSION}/jena-shacl-${JENA_VERSION}.jar
+              {{- end }}
+              {{- if .Values.extensions.shex.enabled }}
+              echo "Downloading jena-shex ${JENA_VERSION}..."
+              wget -q -O /fuseki/extensions/jena-shex-${JENA_VERSION}.jar \
+                ${MAVEN_BASE}/org/apache/jena/jena-shex/${JENA_VERSION}/jena-shex-${JENA_VERSION}.jar
+              {{- end }}
+              echo "Extension downloads complete."
+              ls -lh /fuseki/extensions/
+          volumeMounts:
+            - name: extensions
+              mountPath: /fuseki/extensions
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      {{- end }}
       containers:
         - name: fuseki
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if not .Values.ui.enabled }}
+          {{- if .Values.inference.enabled }}
+          args:
+            - "--config=/fuseki/config/config.ttl"
+          {{- else if not .Values.ui.enabled }}
           args:
             {{- if .Values.dataset.allowUpdate }}
             - "--update"
@@ -76,6 +125,16 @@ spec:
               subPath: shiro.ini
               readOnly: true
             {{- end }}
+            {{- if or .Values.extensions.text.enabled .Values.extensions.geosparql.enabled .Values.extensions.shacl.enabled .Values.extensions.shex.enabled }}
+            - name: extensions
+              mountPath: /fuseki/extensions
+              readOnly: true
+            {{- end }}
+            {{- if .Values.inference.enabled }}
+            - name: assembler-config
+              mountPath: /fuseki/config
+              readOnly: true
+            {{- end }}
       volumes:
         - name: run
           emptyDir: {}
@@ -88,6 +147,15 @@ spec:
         - name: config
           configMap:
             name: {{ include "jena-fuseki.fullname" . }}-config
+        {{- end }}
+        {{- if or .Values.extensions.text.enabled .Values.extensions.geosparql.enabled .Values.extensions.shacl.enabled .Values.extensions.shex.enabled }}
+        - name: extensions
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.inference.enabled }}
+        - name: assembler-config
+          configMap:
+            name: {{ include "jena-fuseki.fullname" . }}-assembler
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

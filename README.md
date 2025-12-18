@@ -17,6 +17,8 @@
 - ✅ **Helm Chart**: Official Helm chart for Kubernetes deployments
 - ✅ **Fast Builds**: Optimized layer caching and multi-stage builds
 - ✅ **Verified Downloads**: SHA1 checksum verification of all artifacts
+- ✅ **Inference Support**: Built-in RDFS and OWL reasoners with preset configurations
+- ✅ **Extensions**: Auto-download official Apache Jena modules (text search, GeoSPARQL, SHACL, ShEx)
 
 ## 📖 About This Project
 
@@ -264,6 +266,101 @@ The UI is automatically extracted from the JAR on first startup and served from 
 | Port | Description |
 |------|-------------|
 | `3030` | Fuseki HTTP endpoint |
+
+## 🚀 Advanced Features
+
+This image includes support for official Apache Jena extension modules that add powerful capabilities to your SPARQL server. All extensions are official Apache Jena Foundation components.
+
+### Inference and Reasoning
+
+Apache Jena includes built-in reasoners for RDFS and OWL inference. **No additional JARs required** - all reasoners are included in the base distribution.
+
+When deploying with the Helm chart, enable inference via `values.yaml`:
+
+```yaml
+inference:
+  enabled: true
+  preset: "rdfs"  # Options: rdfs, owl, owlmicro, owlmini, custom
+```
+
+**Available Reasoners**:
+- **RDFS**: Subclass, subproperty, domain, range inference - fast and efficient
+- **OWL**: Full OWL DL reasoning - computationally expensive
+- **OWL Micro**: Performance-optimized OWL subset
+- **OWL Mini**: Minimal OWL subset - fastest
+
+**Documentation**: [Jena Inference](https://jena.apache.org/documentation/inference/)
+
+### Extensions
+
+Official Apache Jena extension modules for advanced functionality. When using the Helm chart, extensions are **automatically downloaded** from Maven Central at pod initialization.
+
+#### 1. Full-Text Search (jena-text)
+
+Lucene-based full-text search for SPARQL queries:
+
+```yaml
+extensions:
+  text:
+    enabled: true
+    indexDir: /fuseki/text-index
+```
+
+**Use cases**: Search large text corpora, multilingual search, fuzzy matching
+
+**Documentation**: [Jena Text Query](https://jena.apache.org/documentation/query/text-query.html)
+
+#### 2. GeoSPARQL (jena-fuseki-geosparql)
+
+GeoSPARQL 1.0 support for geospatial queries:
+
+```yaml
+extensions:
+  geosparql:
+    enabled: true
+    indexDir: /fuseki/spatial-index
+```
+
+**Use cases**: Location-based queries, spatial relationships, geographic data
+
+**Documentation**: [Jena GeoSPARQL](https://jena.apache.org/documentation/geosparql/)
+
+#### 3. SHACL Validation (jena-shacl)
+
+Shape constraint validation for RDF data quality:
+
+```yaml
+extensions:
+  shacl:
+    enabled: true
+```
+
+**Use cases**: Data validation, quality constraints, schema enforcement
+
+**Documentation**: [Jena SHACL](https://jena.apache.org/documentation/shacl/)
+
+#### 4. ShEx Validation (jena-shex)
+
+Shape expressions for RDF validation:
+
+```yaml
+extensions:
+  shex:
+    enabled: true
+```
+
+**Use cases**: Alternative to SHACL, schema validation, data quality
+
+**Documentation**: [Jena ShEx](https://jena.apache.org/documentation/shex/)
+
+### Extension Management
+
+- ✅ **Zero Configuration**: Extensions auto-download from Maven Central
+- ✅ **Version Aligned**: Extension versions match Jena version (e.g., 5.6.0)
+- ✅ **Classpath Integration**: Automatically added to Java classpath
+- ✅ **Container Optimized**: Cached in ephemeral storage, no image bloat
+
+For detailed configuration, see the [Helm Chart README](helm/jena-fuseki/README.md).
 
 ## 📊 Usage Examples
 

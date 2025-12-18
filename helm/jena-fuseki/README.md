@@ -208,6 +208,182 @@ security:
 
 ⚠️ **Note**: With `enabled: false`, admin endpoints are still restricted to localhost by Fuseki itself.
 
+### Inference and Reasoning
+
+Apache Jena includes built-in reasoners for RDFS and OWL inference. When enabled, Fuseki uses an assembler configuration to apply reasoning over your data.
+
+**No additional JARs required** - all reasoners are included in the base Apache Jena distribution.
+
+#### Inference Presets
+
+```yaml
+inference:
+  enabled: true
+  preset: "rdfs"  # Options: rdfs, owl, owlmicro, owlmini, custom
+```
+
+**Available Presets**:
+
+- **`rdfs`**: RDFS reasoning (subclass, subproperty, domain, range, type inference)
+  - Fast and efficient for basic ontologies
+  - Recommended for most knowledge graphs
+
+- **`owl`**: Full OWL reasoning (OWL FB Rule Reasoner)
+  - Complete OWL DL inference
+  - Computationally expensive - use with caution on large datasets
+
+- **`owlmicro`**: OWL Micro reasoning
+  - Subset of OWL optimized for performance
+  - Good balance between expressiveness and speed
+
+- **`owlmini`**: OWL Mini reasoning
+  - Minimal OWL subset
+  - Fastest OWL-based reasoner
+
+- **`custom`**: Use your own assembler configuration
+  - Provide custom Turtle config via `inference.customConfig`
+
+#### Custom Assembler Configuration
+
+For advanced use cases, provide your own assembler configuration:
+
+```yaml
+inference:
+  enabled: true
+  preset: "custom"
+  customConfig: |
+    @prefix fuseki:  <http://jena.apache.org/fuseki#> .
+    @prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+    @prefix tdb2:    <http://jena.apache.org/2016/tdb#> .
+
+    :service a fuseki:Service ;
+        fuseki:name "dataset" ;
+        fuseki:endpoint [ fuseki:operation fuseki:query ] ;
+        fuseki:dataset :dataset .
+
+    :dataset a tdb2:DatasetTDB2 ;
+        tdb2:location "/fuseki/databases" ;
+        ja:defaultGraph :model .
+
+    :model a ja:InfModel ;
+        ja:baseModel :baseModel ;
+        ja:reasoner [
+            ja:reasonerURL <http://jena.hpl.hp.com/2003/RDFSRuleReasoner>
+        ] .
+
+    :baseModel a tdb2:GraphTDB2 ;
+        tdb2:location "/fuseki/databases" .
+```
+
+See [Jena Assembler Documentation](https://jena.apache.org/documentation/assembler/) for details.
+
+### Extensions
+
+Apache Jena provides official extension modules for advanced functionality. These are **automatically downloaded** from Maven Central during pod initialization.
+
+#### Available Extensions
+
+##### 1. Full-Text Search (jena-text)
+
+Adds Lucene-based full-text search to SPARQL queries:
+
+```yaml
+extensions:
+  text:
+    enabled: true
+    indexDir: /fuseki/text-index
+```
+
+**Features**:
+- Full-text search with `text:query` SPARQL predicate
+- Lucene indexing for fast text searches
+- Configurable analyzers and languages
+
+**Documentation**: [Jena Text Query](https://jena.apache.org/documentation/query/text-query.html)
+
+##### 2. GeoSPARQL (jena-fuseki-geosparql)
+
+GeoSPARQL 1.0 support for geospatial queries:
+
+```yaml
+extensions:
+  geosparql:
+    enabled: true
+    indexDir: /fuseki/spatial-index
+```
+
+**Features**:
+- Geospatial queries (distance, containment, intersection)
+- Well-Known Text (WKT) and GML support
+- Spatial indexing for performance
+
+**Documentation**: [Jena GeoSPARQL](https://jena.apache.org/documentation/geosparql/)
+
+##### 3. SHACL Validation (jena-shacl)
+
+Shape constraint validation for RDF data:
+
+```yaml
+extensions:
+  shacl:
+    enabled: true
+```
+
+**Features**:
+- SHACL shape validation
+- Data quality constraints
+- Validation reports
+
+**Documentation**: [Jena SHACL](https://jena.apache.org/documentation/shacl/)
+
+##### 4. ShEx Validation (jena-shex)
+
+Shape expressions for RDF validation:
+
+```yaml
+extensions:
+  shex:
+    enabled: true
+```
+
+**Features**:
+- ShEx shape validation
+- Alternative to SHACL with different syntax
+- Schema validation
+
+**Documentation**: [Jena ShEx](https://jena.apache.org/documentation/shex/)
+
+#### Combining Extensions and Inference
+
+You can enable multiple extensions and inference together:
+
+```yaml
+inference:
+  enabled: true
+  preset: "rdfs"
+
+extensions:
+  text:
+    enabled: true
+    indexDir: /fuseki/text-index
+  geosparql:
+    enabled: true
+    indexDir: /fuseki/spatial-index
+  shacl:
+    enabled: true
+```
+
+**Note**: Inference and extensions work independently. However, when inference is enabled, you'll use assembler-based configuration for the dataset instead of the standard Fuseki UI-based dataset creation.
+
+#### Extension JAR Management
+
+Extensions are automatically managed:
+- Downloaded from Maven Central at pod start
+- Version matches the Jena version (e.g., 5.6.0)
+- Cached in emptyDir volume (`/fuseki/extensions`)
+- Added to classpath automatically
+- No manual JAR management required
+
 ### Persistence
 
 Configure persistent storage for datasets:
@@ -296,6 +472,15 @@ kubectl delete pvc fuseki-jena-fuseki-data
 | `security.localhostOnly` | Restrict admin endpoints to localhost | `true` |
 | `security.publicRead` | Allow public read access (queries public, writes protected) | `false` |
 | `security.privateDatasets` | List of dataset names requiring full authentication | `[]` |
+| `inference.enabled` | Enable inference/reasoning | `false` |
+| `inference.preset` | Inference preset: `rdfs`, `owl`, `owlmicro`, `owlmini`, `custom` | `rdfs` |
+| `inference.customConfig` | Custom assembler config (Turtle format, when preset=custom) | `""` |
+| `extensions.text.enabled` | Enable jena-text (Lucene full-text search) | `false` |
+| `extensions.text.indexDir` | Text index directory | `/fuseki/text-index` |
+| `extensions.geosparql.enabled` | Enable jena-fuseki-geosparql (GeoSPARQL support) | `false` |
+| `extensions.geosparql.indexDir` | Spatial index directory | `/fuseki/spatial-index` |
+| `extensions.shacl.enabled` | Enable jena-shacl (SHACL validation) | `false` |
+| `extensions.shex.enabled` | Enable jena-shex (ShEx validation) | `false` |
 | `persistence.enabled` | Enable persistence | `true` |
 | `persistence.size` | PVC size | `5Gi` |
 | `persistence.storageClass` | Storage class | `default` |
