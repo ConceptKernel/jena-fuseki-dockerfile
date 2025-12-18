@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*.*.*'
+      - 'v*.*.*-*'
       - '[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
 
@@ -32,15 +33,21 @@ jobs:
           VERSION="${VERSION#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-          # Extract major.minor and major versions
-          MAJOR_MINOR=$(echo $VERSION | sed -E 's/([0-9]+\.[0-9]+)\.[0-9]+/\1/')
-          MAJOR=$(echo $VERSION | sed -E 's/([0-9]+)\.[0-9]+\.[0-9]+/\1/')
+          # Extract Jena version (strip build number if present)
+          # For v5.6.0-2, JENA_VERSION becomes 5.6.0
+          JENA_VERSION=$(echo $VERSION | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+)(-[0-9]+)?$/\1/')
+          echo "jena_version=$JENA_VERSION" >> $GITHUB_OUTPUT
+
+          # Extract major.minor and major versions from base version
+          MAJOR_MINOR=$(echo $JENA_VERSION | sed -E 's/([0-9]+\.[0-9]+)\.[0-9]+/\1/')
+          MAJOR=$(echo $JENA_VERSION | sed -E 's/([0-9]+)\.[0-9]+\.[0-9]+/\1/')
 
           echo "major_minor=$MAJOR_MINOR" >> $GITHUB_OUTPUT
           echo "major=$MAJOR" >> $GITHUB_OUTPUT
 
           echo "Extracted versions:"
-          echo "  Full: $VERSION"
+          echo "  Full tag: $VERSION"
+          echo "  Jena version: $JENA_VERSION"
           echo "  Major.Minor: $MAJOR_MINOR"
           echo "  Major: $MAJOR"
 
@@ -69,7 +76,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            JENA_VERSION=${{ steps.version.outputs.version }}
+            JENA_VERSION=${{ steps.version.outputs.jena_version }}
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
             ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.major_minor }}
@@ -83,7 +90,8 @@ jobs:
         run: |
           echo "## ✅ Docker Multi-arch Image Published!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Apache Jena Fuseki Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Release Tag:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Apache Jena Fuseki Version:** ${{ steps.version.outputs.jena_version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Platforms:**" >> $GITHUB_STEP_SUMMARY
           echo "- linux/amd64" >> $GITHUB_STEP_SUMMARY
@@ -112,57 +120,59 @@ jobs:
           readme-filepath: ./DOCKER_HUB_README.md
           short-description: "Optimized Apache Jena Fuseki SPARQL server - lightweight, secure, multi-arch container"
 
-  create-github-release:
-    name: Create GitHub Release
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        run: |
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          body: |
-            ## Apache Jena Fuseki ${{ steps.version.outputs.version }} Docker Image
-
-            Optimized multi-arch Docker image for Apache Jena Fuseki SPARQL server.
-
-            ### Features
-            - ✅ Multi-arch support (linux/amd64, linux/arm64)
-            - ✅ Minimal image size using Alpine Linux
-            - ✅ Custom JDK with jlink optimization
-            - ✅ Runs as non-root user for security
-            - ✅ Health check enabled
-            - ✅ Based on official Apache Jena ${{ steps.version.outputs.version }}
-
-            ### Quick Start
-
-            ```bash
-            # Pull the image
-            docker pull conceptkernel/jena-fuseki:${{ steps.version.outputs.version }}
-
-            # Run Fuseki server
-            docker run -p 3030:3030 conceptkernel/jena-fuseki:${{ steps.version.outputs.version }}
-            ```
-
-            ### Docker Hub
-            🐳 https://hub.docker.com/r/conceptkernel/jena-fuseki
-
-            ### Documentation
-            📚 https://github.com/ConceptKernel/jena-fuseki-dockerfile#readme
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # GitHub releases are managed manually via gh CLI
+  # Disabled to avoid conflicts with manual release creation
+  # create-github-release:
+  #   name: Create GitHub Release
+  #   needs: build-and-push
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Extract version
+  #       id: version
+  #       run: |
+  #         VERSION="${{ github.ref_name }}"
+  #         VERSION="${VERSION#v}"
+  #         echo "version=$VERSION" >> $GITHUB_OUTPUT
+  #
+  #     - name: Create Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         draft: false
+  #         prerelease: false
+  #         generate_release_notes: true
+  #         body: |
+  #           ## Apache Jena Fuseki ${{ steps.version.outputs.version }} Docker Image
+  #
+  #           Optimized multi-arch Docker image for Apache Jena Fuseki SPARQL server.
+  #
+  #           ### Features
+  #           - ✅ Multi-arch support (linux/amd64, linux/arm64)
+  #           - ✅ Minimal image size using Alpine Linux
+  #           - ✅ Custom JDK with jlink optimization
+  #           - ✅ Runs as non-root user for security
+  #           - ✅ Health check enabled
+  #           - ✅ Based on official Apache Jena ${{ steps.version.outputs.version }}
+  #
+  #           ### Quick Start
+  #
+  #           ```bash
+  #           # Pull the image
+  #           docker pull conceptkernel/jena-fuseki:${{ steps.version.outputs.version }}
+  #
+  #           # Run Fuseki server
+  #           docker run -p 3030:3030 conceptkernel/jena-fuseki:${{ steps.version.outputs.version }}
+  #           ```
+  #
+  #           ### Docker Hub
+  #           🐳 https://hub.docker.com/r/conceptkernel/jena-fuseki
+  #
+  #           ### Documentation
+  #           📚 https://github.com/ConceptKernel/jena-fuseki-dockerfile#readme
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
