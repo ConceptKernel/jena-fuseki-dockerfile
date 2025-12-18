@@ -18,6 +18,9 @@ open http://localhost:3030
 - ✅ **50% smaller** than alternatives (~150MB vs ~350MB)
 - ✅ **Multi-arch** support (amd64 + arm64)
 - ✅ **Latest** Apache Jena Fuseki 5.6.0
+- ✅ **Inference** support (RDFS, OWL reasoners)
+- ✅ **Extensions** auto-download (text search, GeoSPARQL, SHACL, ShEx)
+- ✅ **Kubernetes** ready with Helm chart
 - ✅ **Production-ready** with health checks
 - ✅ **Secure** - runs as non-root user
 - ✅ **Fast** - optimized with jlink minimal JDK
@@ -121,6 +124,21 @@ curl -X POST http://localhost:3030/dataset/data \
 - `/fuseki/backups` - Database backups
 - `/fuseki/configuration` - Configuration files
 - `/fuseki/logs` - Application logs
+
+## ☸️ Kubernetes Deployment
+
+Deploy to Kubernetes with the ConceptKernel Helm chart:
+
+```bash
+# Install from OCI registry
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 1.1.0
+
+# Or from source
+git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
+helm install fuseki ./jena-fuseki-dockerfile/helm/jena-fuseki
+```
+
+Features: Gateway API, Ingress, PersistentVolumes, inference, extensions, and more.
 
 ## 🏗️ Image Details
 
