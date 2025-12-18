@@ -10,6 +10,7 @@ data:
     {{- if eq .Values.inference.preset "custom" }}
     {{- .Values.inference.customConfig | nindent 4 }}
     {{- else if eq .Values.inference.preset "rdfs" }}
+    @prefix :        <#> .
     @prefix fuseki:  <http://jena.apache.org/fuseki#> .
     @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
@@ -43,6 +44,7 @@ data:
     :baseModel a tdb2:GraphTDB2 ;
         tdb2:location "/fuseki/databases" .
     {{- else if eq .Values.inference.preset "owl" }}
+    @prefix :        <#> .
     @prefix fuseki:  <http://jena.apache.org/fuseki#> .
     @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
@@ -76,6 +78,7 @@ data:
     :baseModel a tdb2:GraphTDB2 ;
         tdb2:location "/fuseki/databases" .
     {{- else if eq .Values.inference.preset "owlmicro" }}
+    @prefix :        <#> .
     @prefix fuseki:  <http://jena.apache.org/fuseki#> .
     @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
@@ -109,6 +112,7 @@ data:
     :baseModel a tdb2:GraphTDB2 ;
         tdb2:location "/fuseki/databases" .
     {{- else if eq .Values.inference.preset "owlmini" }}
+    @prefix :        <#> .
     @prefix fuseki:  <http://jena.apache.org/fuseki#> .
     @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
