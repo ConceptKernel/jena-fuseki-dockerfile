@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to a modified semantic versioning scheme where the first three numbers match the Apache Jena Fuseki version, and the build number after the dash is incremented for repository-specific changes.
 
+## [v6.0.0-1] - 2026-03-29
+
+### Changed
+
+#### Major Version Upgrade: Apache Jena 5.6.0 → 6.0.0
+- **Apache Jena 6.0.0** (February 2026) - first major version bump since Jena 5.x
+- **Java 21 minimum** (hard requirement) - unchanged from our build, already using Temurin 21
+- **Lucene 10** upgrade (from 9.x) - powers jena-text full-text search extension
+- **Kryo5** upgrade (from 4.x) - GeoSPARQL spatial index files must be recreated
+- **New IRI parser** (`jena-iri3986`) replaces legacy `jena-iri` with scheme-specific validation
+- **WAR file removed** - standalone JAR only (our image already uses standalone JAR)
+- **TDB1 deprecated** - TDB2 continues as primary storage (our image uses TDB2)
+
+#### UI Enhancements
+- **GeoSPARQL Map Rendering**: New `yasgui-geo-tg` plugin renders GeoSPARQL results on interactive OpenStreetMap + Leaflet maps (CRS84)
+- **Configurable YASGUI**: Dataset-specific example queries and custom prefixes via `yasgui-config` dataset
+
+#### Helm Chart
+- Chart version bumped to `2.0.0` for major upstream version change
+- Updated `appVersion` to `6.0.0`
+- Updated default image tag to `6.0.0`
+
+#### Assembler Config Fix
+- Restructured inference assembler configurations with proper TDB2 dataset/graph separation
+- `:dataset` now uses `ja:RDFDataset` with `ja:defaultGraph` pointing to InfModel
+- `:baseModel` uses `tdb2:GraphTDB2` referencing a named `:tdbDataset`
+- Fixes potential inference model initialization issues with TDB2 backing store
+
+#### Shiro Authentication Fix
+- Fixed Shiro `[users]` section to include role assignment (`admin=password, admin`)
+- Users now correctly receive their role permissions
+
+### Removed
+- **`jena-iri`** module retired upstream (replaced by `jena-iri3986`)
+- **`jena-permissions`** module retired upstream
+- **`jena-fuseki-webapp`** and **`jena-fuseki-war`** modules removed upstream
+
+### Migration Notes
+- **GeoSPARQL users**: Spatial index files must be recreated after upgrade (Kryo5 format incompatible with Kryo4)
+- **TDB2 data**: Recommended to reload data due to `xsd:decimal` encoding fix
+- **No Dockerfile changes required**: Same base images (Temurin 21 + Alpine 3.21), same jlink process, same entrypoint
+
 ## [v5.6.0-2] - 2025-12-18
 
 ### Added
@@ -148,18 +190,19 @@ and this project adheres to a modified semantic versioning scheme where the firs
 ## Version Format
 
 ```
-v5.6.0-1
+v6.0.0-1
   │││  └─ Build number (incremented for jena-fuseki-dockerfile changes)
   │││
-  └┴┴─ Apache Jena Fuseki version (5.6.0)
+  └┴┴─ Apache Jena Fuseki version (6.0.0)
 ```
 
 **Examples**:
-- `v5.6.0-1`: Initial release based on Fuseki 5.6.0
-- `v5.6.0-2`: Updated Helm chart for same Fuseki version
-- `v5.7.0-1`: New Fuseki upstream release
+- `v6.0.0-1`: Initial release based on Fuseki 6.0.0
+- `v6.0.0-2`: Updated Helm chart for same Fuseki version
+- `v6.1.0-1`: New Fuseki upstream release
 
 ---
 
+[v6.0.0-1]: https://github.com/ConceptKernel/jena-fuseki-dockerfile/releases/tag/v6.0.0-1
 [v5.6.0-2]: https://github.com/ConceptKernel/jena-fuseki-dockerfile/releases/tag/v5.6.0-2
 [v5.6.0-1]: https://github.com/ConceptKernel/jena-fuseki-dockerfile/releases/tag/v5.6.0-1

@@ -3,7 +3,7 @@
 Community Helm chart for deploying Apache Jena Fuseki SPARQL server on Kubernetes.
 
 **Maintained by**: [ConceptKernel](https://github.com/ConceptKernel)
-**Chart Version**: 1.1.0 | **App Version**: 5.6.0
+**Chart Version**: 2.0.0 | **App Version**: 6.0.0
 
 🐳 **Docker Image**: [conceptkernel/jena-fuseki](https://hub.docker.com/r/conceptkernel/jena-fuseki)
 📦 **Source**: [ConceptKernel/jena-fuseki-dockerfile](https://github.com/ConceptKernel/jena-fuseki-dockerfile)
@@ -13,7 +13,7 @@ Community Helm chart for deploying Apache Jena Fuseki SPARQL server on Kubernete
 
 ```bash
 # Install from OCI registry (recommended)
-helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 1.1.0
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 2.0.0
 
 # Or install from local clone
 git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
@@ -28,7 +28,7 @@ kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
 
 ## Features
 
-- ✅ **Latest**: Apache Jena Fuseki 5.6.0
+- ✅ **Latest**: Apache Jena Fuseki 6.0.0
 - ✅ **Inference**: RDFS, OWL, OWL Micro, OWL Mini reasoners
 - ✅ **Extensions**: Auto-download jena-text, jena-geosparql, jena-shacl, jena-shex
 - ✅ **Web UI**: Optional Vue 3 admin interface
@@ -42,14 +42,14 @@ kubectl port-forward svc/fuseki-jena-fuseki 3030:3030
 **Headless SPARQL server (no UI)**:
 ```bash
 helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   --set ui.enabled=false
 ```
 
 **With RDFS inference**:
 ```bash
 helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   --set inference.enabled=true \
   --set inference.preset=rdfs
 ```
@@ -57,7 +57,7 @@ helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
 **Production with full-text search**:
 ```bash
 helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   --set security.password="SecurePass123" \
   --set extensions.text.enabled=true \
   --set persistence.size=50Gi \
@@ -106,13 +106,13 @@ For all values, see [values.yaml](values.yaml)
 ```bash
 # Upgrade to latest version
 helm upgrade fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   --reuse-values
 
 # Upgrade with new values
 helm upgrade fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
-  --set image.tag=5.6.0-3
+  --version 2.0.0 \
+  --set image.tag=6.0.0-3
 ```
 
 ## Uninstalling

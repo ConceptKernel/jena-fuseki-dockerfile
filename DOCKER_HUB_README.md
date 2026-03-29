@@ -17,7 +17,7 @@ open http://localhost:3030
 
 - ✅ **50% smaller** than alternatives (~150MB vs ~350MB)
 - ✅ **Multi-arch** support (amd64 + arm64)
-- ✅ **Latest** Apache Jena Fuseki 5.6.0
+- ✅ **Latest** Apache Jena Fuseki 6.0.0
 - ✅ **Inference** support (RDFS, OWL reasoners)
 - ✅ **Extensions** auto-download (text search, GeoSPARQL, SHACL, ShEx)
 - ✅ **Kubernetes** ready with Helm chart
@@ -30,8 +30,8 @@ open http://localhost:3030
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest stable release |
-| `5.6.0`, `5.6`, `5` | Specific version |
-| `5.5.0`, `5.4.0` | Previous versions |
+| `6.0.0`, `5.6`, `5` | Specific version |
+| `5.6.0`, `5.6`, `5` | Previous versions |
 
 ## 🔧 Usage
 
@@ -131,7 +131,7 @@ Deploy to Kubernetes with the ConceptKernel Helm chart:
 
 ```bash
 # Install from OCI registry
-helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 1.1.0
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 2.0.0
 
 # Or from source
 git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
@@ -144,7 +144,7 @@ Features: Gateway API, Ingress, PersistentVolumes, inference, extensions, and mo
 
 - **Base**: Alpine Linux 3.21
 - **Java**: Custom JDK 21 (jlink optimized)
-- **Jena Version**: 5.6.0
+- **Jena Version**: 6.0.0
 - **User**: fuseki:fuseki (UID/GID 1000)
 - **Platforms**: linux/amd64, linux/arm64
 

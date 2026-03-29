@@ -1,6 +1,6 @@
 # Jena Fuseki Helm Chart
 
-This directory contains the official Helm chart for Apache Jena Fuseki 5.6.0.
+This directory contains the official Helm chart for Apache Jena Fuseki 6.0.0.
 
 ## Quick Start
 

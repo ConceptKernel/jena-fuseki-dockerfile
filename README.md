@@ -8,10 +8,10 @@
 
 ## 🚀 Features
 
-- ✅ **Web UI Included**: Full Vue 3 admin interface with SPARQL query editor
+- ✅ **Web UI Included**: Full Vue 3 admin interface with SPARQL query editor and GeoSPARQL map rendering
 - ✅ **Multi-arch Support**: linux/amd64 and linux/arm64
 - ✅ **Minimal Size**: ~150MB Alpine Linux base with custom JDK via jlink
-- ✅ **Latest Version**: Based on Apache Jena Fuseki 5.6.0 (October 2025)
+- ✅ **Latest Version**: Based on Apache Jena Fuseki 6.0.0 (February 2026)
 - ✅ **Security First**: Shiro authentication, runs as non-root user, minimal attack surface
 - ✅ **Production Ready**: Health checks, proper logging, configurable resources
 - ✅ **Helm Chart**: Community Helm chart for Kubernetes deployments (by ConceptKernel)
@@ -47,25 +47,25 @@ This repository maintains:
 
 ### Versioning Scheme
 
-**Current Release**: `v5.6.0-2`
+**Current Release**: `v6.0.0-1`
 
 We follow a modified semantic versioning scheme:
 
 ```
-v5.6.0-1
+v6.0.0-1
   │││  └─ Build number (incremented for jena-fuseki-dockerfile changes)
   │││
-  └┴┴─ Apache Jena Fuseki version (5.6.0)
+  └┴┴─ Apache Jena Fuseki version (6.0.0)
 ```
 
-- **First three numbers** (`5.6.0`): Match the upstream Apache Jena Fuseki release version
+- **First three numbers** (`6.0.0`): Match the upstream Apache Jena Fuseki release version
 - **Build number after dash** (`-1`): Incremented for patches, documentation updates, or Helm chart changes in this repository
 - This ensures version alignment with Apache Jena while allowing independent updates
 
 **Example**:
-- `v5.6.0-1`: Initial release based on Fuseki 5.6.0
-- `v5.6.0-2`: Updated Helm chart for same Fuseki version
-- `v5.7.0-1`: New Fuseki upstream release
+- `v6.0.0-1`: Initial release based on Fuseki 6.0.0
+- `v6.0.0-2`: Updated Helm chart for same Fuseki version
+- `v6.1.0-1`: New Fuseki upstream release
 
 ### Official Apache Jena Resources
 
@@ -97,13 +97,13 @@ The simplest way to get started:
 
 ```bash
 # Pull the latest image
-docker pull conceptkernel/jena-fuseki:5.6.0
+docker pull conceptkernel/jena-fuseki:6.0.0
 
 # Run Fuseki server with UI
 docker run -d \
   --name jena-fuseki \
   -p 3030:3030 \
-  conceptkernel/jena-fuseki:5.6.0
+  conceptkernel/jena-fuseki:6.0.0
 
 # Access the UI in your browser
 open http://localhost:3030
@@ -125,7 +125,7 @@ docker run -d \
   -p 3030:3030 \
   -v fuseki-data:/fuseki/databases \
   -e JAVA_OPTIONS="-Xmx4g -Xms2g" \
-  conceptkernel/jena-fuseki:5.6.0
+  conceptkernel/jena-fuseki:6.0.0
 
 # View logs
 docker logs -f jena-fuseki
@@ -175,7 +175,7 @@ docker-compose up -d
 
 ### Using Helm (Kubernetes)
 
-**Helm Chart Version**: `1.1.0` | **App Version**: `5.6.0`
+**Helm Chart Version**: `2.0.0` | **App Version**: `6.0.0`
 
 The ConceptKernel Helm chart provides a production-ready, configurable deployment with extensive options for security, storage, networking, and advanced features.
 
@@ -185,7 +185,7 @@ The ConceptKernel Helm chart provides a production-ready, configurable deploymen
 
 ```bash
 # Install directly from GitHub Container Registry
-helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 1.1.0
+helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki --version 2.0.0
 
 # Get the admin password
 kubectl get secret fuseki-jena-fuseki-admin -o jsonpath='{.data.password}' | base64 -d
@@ -361,8 +361,8 @@ gateway:
 ```bash
 # Production deployment with inference and extensions (from OCI registry)
 helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
-  --set image.tag=5.6.0-2 \
+  --version 2.0.0 \
+  --set image.tag=6.0.0 \
   --set security.password="SecurePass123" \
   --set inference.enabled=true \
   --set inference.preset=rdfs \
@@ -376,9 +376,9 @@ helm install fuseki ./jena-fuseki -f my-values.yaml
 
 # Upgrade existing release
 helm upgrade fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   --reuse-values \
-  --set image.tag=5.6.0-2
+  --set image.tag=6.0.0
 
 # Uninstall
 helm uninstall fuseki
@@ -401,13 +401,13 @@ git clone https://github.com/ConceptKernel/jena-fuseki-dockerfile.git
 cd jena-fuseki-dockerfile
 
 # Build for your platform
-docker build --build-arg JENA_VERSION=5.6.0 -t jena-fuseki:local .
+docker build --build-arg JENA_VERSION=6.0.0 -t jena-fuseki:local .
 
 # Build multi-arch (requires buildx)
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --build-arg JENA_VERSION=5.6.0 \
-  -t conceptkernel/jena-fuseki:5.6.0 \
+  --build-arg JENA_VERSION=6.0.0 \
+  -t conceptkernel/jena-fuseki:6.0.0 \
   --push \
   .
 ```
@@ -429,7 +429,7 @@ The UI is automatically extracted from the JAR on first startup and served from 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `JAVA_OPTIONS` | `-Xmx2048m -Xms2048m` | JVM memory settings |
-| `JENA_VERSION` | `5.6.0` | Apache Jena version (build-time) |
+| `JENA_VERSION` | `6.0.0` | Apache Jena version (build-time) |
 | `FUSEKI_DIR` | `/fuseki` | Fuseki installation directory |
 | `FUSEKI_BASE` | `/fuseki/run` | Runtime directory (config, logs, UI files) |
 
@@ -540,7 +540,7 @@ extensions:
 ### Extension Management
 
 - ✅ **Zero Configuration**: Extensions auto-download from Maven Central
-- ✅ **Version Aligned**: Extension versions match Jena version (e.g., 5.6.0)
+- ✅ **Version Aligned**: Extension versions match Jena version (e.g., 6.0.0)
 - ✅ **Classpath Integration**: Automatically added to Java classpath
 - ✅ **Container Optimized**: Cached in ephemeral storage, no image bloat
 
@@ -593,14 +593,14 @@ For production Kubernetes deployments, use the ConceptKernel Helm chart:
 ```bash
 # Install from OCI registry (recommended)
 helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   --set persistence.size=50Gi \
   --set resources.limits.memory=8Gi \
   --set security.password=your-secure-password
 
 # Or use a custom values file
 helm install fuseki oci://ghcr.io/conceptkernel/charts/jena-fuseki \
-  --version 1.1.0 \
+  --version 2.0.0 \
   -f production-values.yaml
 
 # Or install from local clone
@@ -757,7 +757,7 @@ EOF
 
 ### Web UI Implementation
 
-This container uses `jena-fuseki-server-5.6.0.jar` (55.9MB fat JAR) which includes:
+This container uses `jena-fuseki-server-6.0.0.jar` (~56.9MB fat JAR) which includes:
 - The full Fuseki server with UI and admin functionality
 - Apache Shiro security framework
 - Prometheus metrics endpoint

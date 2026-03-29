@@ -10,9 +10,9 @@ We use a modified semantic versioning format: `vX.Y.Z-N`
 - `N` = Build number (incremental for our image builds)
 
 Examples:
-- `v5.6.0-1` → Apache Jena 5.6.0, first build
-- `v5.6.0-2` → Apache Jena 5.6.0, second build (bug fix, feature addition)
-- `v5.7.0-1` → Apache Jena 5.7.0, first build
+- `v6.0.0-1` → Apache Jena 6.0.0, first build
+- `v6.0.0-2` → Apache Jena 6.0.0, second build (bug fix, feature addition)
+- `v6.1.0-1` → Apache Jena 6.1.0, first build
 
 ## Pre-Release Checklist
 
@@ -20,7 +20,7 @@ Before creating a release, ensure:
 
 1. **Verify Apache Jena version exists**
    ```bash
-   JENA_VERSION="5.6.0"
+   JENA_VERSION="6.0.0"
    curl -I "https://repo1.maven.org/maven2/org/apache/jena/apache-jena/${JENA_VERSION}/apache-jena-${JENA_VERSION}.tar.gz"
    # Should return HTTP 200
    ```
@@ -34,7 +34,7 @@ Before creating a release, ensure:
 3. **Local testing** (optional but recommended)
    ```bash
    # Test build locally
-   podman build --build-arg JENA_VERSION=5.6.0 -t jena-fuseki:test .
+   podman build --build-arg JENA_VERSION=6.0.0 -t jena-fuseki:test .
 
    # Test run
    podman run -p 3030:3030 jena-fuseki:test
@@ -291,7 +291,7 @@ The GitHub Actions workflow includes:
 ## Release Cadence
 
 - **Jena version updates**: Release when new Apache Jena versions are published
-- **Feature additions**: Increment build number (e.g., v5.6.0-1 → v5.6.0-2)
+- **Feature additions**: Increment build number (e.g., v6.0.0-1 → v6.0.0-2)
 - **Bug fixes**: Increment build number
 - **Chart updates**: Bump chart version in Chart.yaml
 

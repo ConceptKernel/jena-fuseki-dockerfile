@@ -5,7 +5,7 @@
 ## Container image configuration
 image:
   repository: conceptkernel/jena-fuseki
-  tag: "5.6.0"
+  tag: "6.0.0"
   pullPolicy: IfNotPresent
 
 ## Number of replicas (use 1 for RWO volumes)

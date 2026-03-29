@@ -20,7 +20,7 @@ data:
     securityManager.sessionManager = $sessionManager
 
     [users]
-    {{ .Values.security.adminUser }}={{ include "jena-fuseki.adminPassword" . }}
+    {{ .Values.security.adminUser }}={{ include "jena-fuseki.adminPassword" . }}, {{ .Values.security.adminUser }}
 
     [roles]
     {{ .Values.security.adminUser }} = *
